@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <title>New message</title>
+</head>
+<body>
+  <form action="/newmessage" method="post">
+    <div class="form-group pl-3">
+      <label for="username">Username</label>
+      <input type="text" class="form-control" id="username" name="username" placeholder="Enter Username" required>
+    </div>
+    <div class="form-group pl-3">
+      <label for="country">Country</label>
+      <input type="text" class="form-control" id="country" name="country" placeholder="Country" required>
+    </div>
+    <div class="form-check pl-3">
+      <label for="message">Message</label>
+      <textarea class="form-control ms-0" id="message" name="message" cols="30" rows="10" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary m-3">Submit</button>
+  </form>
+</body>
+</html>
