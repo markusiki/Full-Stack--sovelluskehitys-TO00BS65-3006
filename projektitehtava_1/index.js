@@ -52,7 +52,7 @@ app.post('/newmessage', (req, res) => {
     if (err) throw err
     console.log('Saved!')
   })
-  res.send(`New message: ${newmessage.message} saved!`)
+  res.send(`New message: ${newmessage.message}, saved successfully!`)
 })
 
 app.listen(PORT, () => {
