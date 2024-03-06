@@ -6,6 +6,7 @@ const PORT = 3000
 const app = express()
 
 app.use(bodyParser.urlencoded({ extended: true }))
+app.use(express.json())
 
 app.use(express.static('public'))
 
@@ -53,6 +54,34 @@ app.post('/newmessage', (req, res) => {
     console.log('Saved!')
   })
   res.send(`New message: ${newmessage.message}, saved successfully!`)
+})
+
+app.get('/ajaxmessage', (req, res) => {
+  res.sendFile(__dirname + '/public/ajaxmessage.html')
+})
+
+app.post('/ajaxmessage', (req, res) => {
+  const data = require('./JSON_Guestbook_data.json')
+  const body = req.body
+  console.log(body)
+
+  const newmessage = {
+    id: data.length + 1,
+    username: body.username,
+    country: body.country,
+    date: new Date(),
+    message: body.message,
+  }
+
+  data.push(newmessage)
+
+  jsonStr = JSON.stringify(data)
+
+  fs.writeFile('JSON_Guestbook_data.json', jsonStr, (err) => {
+    if (err) throw err
+    console.log('Saved!')
+  })
+  res.send(data)
 })
 
 app.listen(PORT, () => {
