@@ -24,6 +24,7 @@ app.get('/guestbook', (req, res) => {
         <td>${element.message}</td>
       </tr>`
   })
+  results += '</body></html>'
 
   res.send(results)
 })
@@ -81,7 +82,11 @@ app.post('/ajaxmessage', (req, res) => {
     if (err) throw err
     console.log('Saved!')
   })
-  res.send(data)
+  const messages = data.map((element) => {
+    return element.message
+  })
+
+  res.send(messages)
 })
 
 app.listen(PORT, () => {
