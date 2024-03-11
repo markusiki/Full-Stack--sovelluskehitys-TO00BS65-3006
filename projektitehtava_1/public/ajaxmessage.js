@@ -1,5 +1,6 @@
 const submitButton = document.getElementById('submit')
-const messagesElement = document.getElementById('messages')
+const messagesHeader = document.getElementById('messagesHeader')
+const messagesList = document.getElementById('messages')
 
 function postForm(event) {
   event.preventDefault()
@@ -20,19 +21,18 @@ function postForm(event) {
 submitButton.addEventListener('submit', postForm)
 
 function showMessages(messages) {
-  if (messagesElement.firstChild) {
-    const p = document.createElement('p')
-    messagesElement.appendChild(p)
-    p.innerHTML = messages[messages.length - 1]
+  if (messagesList.firstChild) {
+    const li = document.createElement('li')
+    li.innerHTML = messages[messages.length - 1]
+    li.className = 'list-group-item'
+    messagesList.appendChild(li)
   } else {
-    document.createElement('h2').innerHTML = 'Messages:'
-    const header = document.createElement('h1')
-    header.innerHTML = 'Messages:'
-    messagesElement.appendChild(header)
+    messagesHeader.innerHTML = 'Messages:'
     messages.forEach((message) => {
-      const p = document.createElement('p')
-      messagesElement.appendChild(p)
-      p.innerHTML = message
+      const li = document.createElement('li')
+      li.innerHTML = message
+      li.className = 'list-group-item'
+      messagesList.appendChild(li)
     })
   }
 }
