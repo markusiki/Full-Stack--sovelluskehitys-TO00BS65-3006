@@ -36,7 +36,6 @@ app.get('/newmessage', (req, res) => {
 app.post('/newmessage', (req, res) => {
   const data = require('./JSON_Guestbook_data.json')
   const body = req.body
-  console.log(body)
 
   const newmessage = {
     id: data.length + 1,
@@ -52,7 +51,6 @@ app.post('/newmessage', (req, res) => {
 
   fs.writeFile('JSON_Guestbook_data.json', jsonStr, (err) => {
     if (err) throw err
-    console.log('Saved!')
   })
   res.send(`New message: ${newmessage.message}, saved successfully!`)
 })
@@ -64,7 +62,6 @@ app.get('/ajaxmessage', (req, res) => {
 app.post('/ajaxmessage', (req, res) => {
   const data = require('./JSON_Guestbook_data.json')
   const body = req.body
-  console.log(body)
 
   const newmessage = {
     id: data.length + 1,
@@ -80,7 +77,6 @@ app.post('/ajaxmessage', (req, res) => {
 
   fs.writeFile('JSON_Guestbook_data.json', jsonStr, (err) => {
     if (err) throw err
-    console.log('Saved!')
   })
   const messages = data.map((element) => {
     return element.message
