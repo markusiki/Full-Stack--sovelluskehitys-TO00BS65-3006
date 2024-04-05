@@ -1,9 +1,13 @@
 const mongoose = require('mongoose')
 
-const artistSchema = mongoose.Schema({
-  name: {
+const albumSchema = mongoose.Schema({
+  title: {
     type: String,
     required: true,
+  },
+  artist: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Artist',
   },
   songs: [
     {
@@ -11,15 +15,9 @@ const artistSchema = mongoose.Schema({
       ref: 'Song',
     },
   ],
-  albums: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Album',
-    },
-  ],
 })
 
-artistSchema.set('toJSON', {
+albumSchema.set('toJSON', {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString()
     delete returnedObject._id
@@ -27,4 +25,4 @@ artistSchema.set('toJSON', {
   },
 })
 
-module.exports = mongoose.model('Artist', artistSchema)
+module.exports = mongoose.model('Album', albumSchema)
