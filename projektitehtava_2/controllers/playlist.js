@@ -5,14 +5,38 @@ const Album = require('../models/album')
 
 playlistRouter.get('/getall', async (req, res) => {
   const playlist = await Song.find({})
-    .populate('artist', { name: 1, _id: 0 })
-    .populate('album', { title: 1, _id: 0 })
+    .populate({
+      path: 'artist',
+      transform: (item) => (item == null ? null : item.name),
+    })
+    .populate({
+      path: 'album',
+      transform: (item) => (item == null ? null : item.title),
+    })
 
   if (!playlist) {
     res.status(200).json({ message: 'Playlist is empty' })
     return
   }
   res.json(playlist)
+})
+
+playlistRouter.get('/:id', async (req, res) => {
+  const id = req.params.id
+  const item = await Song.findById(id)
+    .populate({
+      path: 'artist',
+      transform: (item) => (item == null ? null : item.name),
+    })
+    .populate({
+      path: 'album',
+      transform: (item) => (item == null ? null : item.title),
+    })
+  if (!item) {
+    res.status(200).json({ message: 'No item matches the id' })
+    return
+  }
+  res.json(item)
 })
 
 playlistRouter.post('/add', async (req, res) => {
