@@ -5,8 +5,8 @@ const Album = require('../models/album')
 
 playlistRouter.get('/getall', async (req, res) => {
   const playlist = await Song.find({})
-    .populate('album', { title: 1, date: 1 })
-    .populate('artist', { name: 1 })
+    .populate('artist', { name: 1, _id: 0 })
+    .populate('album', { title: 1, _id: 0 })
 
   if (!playlist) {
     res.status(200).json({ message: 'Playlist is empty' })
