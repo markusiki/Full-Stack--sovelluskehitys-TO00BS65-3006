@@ -21,9 +21,9 @@ playlistRouter.get('/getall', async (req, res) => {
   res.json(playlist)
 })
 
-playlistRouter.get('/:id', async (req, res) => {
-  const id = req.params.id
-  const item = await Song.findById(id)
+playlistRouter.get('/:songName', async (req, res) => {
+  const songName = req.params.songName
+  const item = await Song.find({ title: { $regex: new RegExp(songName, 'i') } })
     .populate({
       path: 'artist',
       transform: (item) => (item == null ? null : item.name),
@@ -105,6 +105,43 @@ playlistRouter.post('/add', async (req, res) => {
   } catch (error) {
     console.log(error)
     res.status(400).json()
+  }
+})
+
+playlistRouter.put('/update/:id', async (req, res) => {
+  const id = req.params.id
+  const update = req.body
+  try {
+    const songToUpdate = await Song.findById(id).exec()
+    console.log(songToUpdate)
+    if (!songToUpdate) {
+      res.status(200).json({ message: 'No item matches the given id ' })
+      return
+    }
+
+    const changeArtist = () => {
+      const artist = Artist.findOne({
+        name: { $regex: new RegExp(update.artist, 'i') },
+      }) // Jatka tästä
+    }
+
+    if (songToUpdate.artist) {
+      const newArtist = changeArtist()
+    }
+
+    const album = await Album.findById(songToUpdate.album)
+
+    Object.entries(update).forEach(([key, value]) => {
+      if (key !== 'artist' || key !== 'album') {
+        console.log(key, value)
+        songToUpdate.set(key, value)
+      }
+    })
+
+    const updatedSong = await songToUpdate.save()
+    res.json(updatedSong)
+  } catch (error) {
+    res.status(400).json(error)
   }
 })
 
