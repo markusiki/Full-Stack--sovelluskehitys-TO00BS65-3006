@@ -119,20 +119,87 @@ playlistRouter.put('/update/:id', async (req, res) => {
       return
     }
 
-    const changeArtist = () => {
-      const artist = Artist.findOne({
-        name: { $regex: new RegExp(update.artist, 'i') },
-      }) // Jatka tästä
+    if (update.artist && !update.album) {
+      res.status(200).json({ message: 'Album missing' })
+      return
+    }
+    if (update.album && !update.artist) {
+      res.status(200).json({ message: 'Artist missing' })
+      return
+    }
+    const existingArtist = await Artist.findOne({
+      name: { $regex: new RegExp(update.artist, 'i') },
+    })
+    const existingAlbum = await Album.findOne({
+      title: { $regex: new RegExp(update.album, 'i') },
+    })
+
+    const getArtist = () => {
+      if (!existingArtist) {
+        const newArtist = Artist.create({
+          name: update.artist,
+          songs: [songToUpdate._id],
+        })
+        return newArtist
+      }
+      return existingArtist
     }
 
-    if (songToUpdate.artist) {
-      const newArtist = changeArtist()
+    const getAlbum = () => {
+      if (!existingAlbum) {
+        console.log('newAlbum Created')
+        const newAlbum = Album.create({
+          title: update.album,
+          songs: [songToUpdate._id],
+        })
+        return newAlbum
+      }
+      console.log('Existing album used')
+      return existingAlbum
+    }
+    const artist = await getArtist()
+    console.log('artist', artist)
+    const album = await getAlbum()
+    console.log('album', album)
+
+    const changeArtist = async () => {
+      console.log('existingArtist._id', existingArtist?._id)
+      console.log('songToUpdate.artist._id', songToUpdate?.artist._id)
+      if (existingArtist?._id !== songToUpdate.artist._id) {
+        // Delete song from old artist's song list
+        const oldArtist = songToUpdate.artist._id
+        const artistToModify = await Artist.findById(oldArtist)
+        const songToDelete = artistToModify.songs.indexOf({
+          _id: songToUpdate._id,
+        })
+        artistToModify.songs = artistToModify.songs.splice(songToDelete, 1)
+        await artistToModify.save()
+      }
     }
 
-    const album = await Album.findById(songToUpdate.album)
+    const changeAlbum = async () => {
+      if (existingAlbum?._id !== songToUpdate.album._id) {
+        // Delete song from old album's song list
+        const oldAlbum = songToUpdate.album._id
+        const albumToModify = await Album.findById(oldAlbum)
+        const songToDelete = albumToModify.songs.indexOf({
+          _id: songToUpdate._id,
+        })
+        albumToModify.songs = albumToModify.songs.splice(songToDelete, 1)
+        await albumToModify.save()
+      }
+    }
 
-    Object.entries(update).forEach(([key, value]) => {
-      if (key !== 'artist' || key !== 'album') {
+    Object.entries(update).forEach(async ([key, value]) => {
+      if (key === 'artist') {
+        changeArtist()
+        songToUpdate.set(key, artist._id)
+        return
+      }
+      if (key === 'album') {
+        changeAlbum()
+        songToUpdate.set(key, album._id)
+      } else {
         console.log(key, value)
         songToUpdate.set(key, value)
       }
@@ -141,6 +208,7 @@ playlistRouter.put('/update/:id', async (req, res) => {
     const updatedSong = await songToUpdate.save()
     res.json(updatedSong)
   } catch (error) {
+    console.log(error)
     res.status(400).json(error)
   }
 })
