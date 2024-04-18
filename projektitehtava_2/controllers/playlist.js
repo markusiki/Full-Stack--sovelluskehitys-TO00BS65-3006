@@ -163,29 +163,29 @@ playlistRouter.put('/update/:id', async (req, res) => {
     console.log('album', album)
 
     const changeArtist = async () => {
-      console.log('existingArtist._id', existingArtist?._id)
-      console.log('songToUpdate.artist._id', songToUpdate?.artist._id)
-      if (existingArtist?._id !== songToUpdate.artist._id) {
+      if (artist._id !== songToUpdate.artist._id) {
         // Delete song from old artist's song list
-        const oldArtist = songToUpdate.artist._id
-        const artistToModify = await Artist.findById(oldArtist)
-        const songToDelete = artistToModify.songs.indexOf({
-          _id: songToUpdate._id,
-        })
-        artistToModify.songs = artistToModify.songs.splice(songToDelete, 1)
+        const artistToModify = await Artist.findById(songToUpdate.artist._id)
+        for (const [index, song] of artistToModify.songs.entries()) {
+          if (song._id.toString() === songToUpdate._id.toString()) {
+            artistToModify.songs = artistToModify.songs.toSpliced(index, 1)
+            break
+          }
+        }
         await artistToModify.save()
       }
     }
 
     const changeAlbum = async () => {
-      if (existingAlbum?._id !== songToUpdate.album._id) {
+      if (album._id !== songToUpdate.album._id) {
         // Delete song from old album's song list
-        const oldAlbum = songToUpdate.album._id
-        const albumToModify = await Album.findById(oldAlbum)
-        const songToDelete = albumToModify.songs.indexOf({
-          _id: songToUpdate._id,
-        })
-        albumToModify.songs = albumToModify.songs.splice(songToDelete, 1)
+        const albumToModify = await Album.findById(songToUpdate.album._id)
+        for (const [index, song] of albumToModify.songs.entries()) {
+          if (song._id.toString() === songToUpdate._id.toString()) {
+            albumToModify.songs = albumToModify.songs.toSpliced(index, 1)
+            break
+          }
+        }
         await albumToModify.save()
       }
     }
