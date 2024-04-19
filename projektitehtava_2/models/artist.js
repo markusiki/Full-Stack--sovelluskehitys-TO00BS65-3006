@@ -13,8 +13,13 @@ const artistSchema = mongoose.Schema({
   ],
   albums: [
     {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Album',
+      _id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Album',
+      },
+      title: {
+        type: String,
+      },
     },
   ],
 })
