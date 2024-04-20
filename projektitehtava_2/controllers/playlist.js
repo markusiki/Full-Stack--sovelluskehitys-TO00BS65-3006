@@ -21,22 +21,50 @@ playlistRouter.get('/getall', async (req, res) => {
   res.json(playlist)
 })
 
-playlistRouter.get('/:songName', async (req, res) => {
-  const songName = req.params.songName
-  const item = await Song.find({ title: { $regex: new RegExp(songName, 'i') } })
-    .populate({
-      path: 'artist',
-      transform: (item) => (item == null ? null : item.name),
-    })
-    .populate({
-      path: 'album',
-      transform: (item) => (item == null ? null : item.title),
-    })
-  if (!item) {
-    res.status(200).json({ message: 'No item matches the id' })
-    return
+playlistRouter.get('/getbyid/:id', async (req, res) => {
+  try {
+    const id = req.params.id
+    const item = await Song.findById(id)
+      .populate({
+        path: 'artist',
+        transform: (item) => (item == null ? null : item.name),
+      })
+      .populate({
+        path: 'album',
+        transform: (item) => (item == null ? null : item.title),
+      })
+    if (!item) {
+      res.status(200).json({ message: 'No item matches the id' })
+      return
+    }
+    res.json(item)
+  } catch (error) {
+    res.status(400).json(error)
   }
-  res.json(item)
+})
+
+playlistRouter.get('/getbyname/:songName', async (req, res) => {
+  try {
+    const songName = req.params.songName
+    const item = await Song.find({
+      title: { $regex: new RegExp(songName, 'i') },
+    })
+      .populate({
+        path: 'artist',
+        transform: (item) => (item == null ? null : item.name),
+      })
+      .populate({
+        path: 'album',
+        transform: (item) => (item == null ? null : item.title),
+      })
+    if (!item) {
+      res.status(200).json({ message: 'No item matches the song name' })
+      return
+    }
+    res.json(item)
+  } catch (error) {
+    res.status(400).json(error)
+  }
 })
 
 playlistRouter.post('/add', async (req, res) => {
@@ -209,6 +237,7 @@ playlistRouter.put('/update/:id', async (req, res) => {
             break
           }
         }
+        // Add song to new album's song list
         album.songs = album.songs.concat(songToUpdate._id)
         await album.save()
       }
@@ -244,6 +273,66 @@ playlistRouter.put('/update/:id', async (req, res) => {
     res.json(updatedSong)
   } catch (error) {
     console.log(error)
+    res.status(400).json(error)
+  }
+})
+
+playlistRouter.delete('/delete/:id', async (req, res) => {
+  try {
+    const id = req.params.id
+    const songToDelete = await Song.findById(id)
+    if (!songToDelete) {
+      res.status(404).json({ message: 'No item matches the given id' })
+      return
+    }
+    const deleteFromArtist = async () => {
+      const artistToDeleteFrom = await Artist.findById(songToDelete.artist)
+      for (const [index, song] of artistToDeleteFrom.songs.entries()) {
+        if (song._id.toString() === songToDelete._id.toString()) {
+          artistToDeleteFrom.songs = artistToDeleteFrom.songs.toSpliced(
+            index,
+            1
+          )
+          await artistToDeleteFrom.save()
+          break
+        }
+      }
+    }
+
+    const deleteFromAlbum = async () => {
+      const albumToDeleteFrom = await Album.findById(songToDelete.album)
+      for (const [index, song] of albumToDeleteFrom.songs.entries()) {
+        if (song._id.toString() === songToDelete._id.toString()) {
+          albumToDeleteFrom.songs = albumToDeleteFrom.songs.toSpliced(index, 1)
+          await albumToDeleteFrom.save()
+          break
+        }
+      }
+    }
+
+    deleteFromArtist()
+    deleteFromAlbum()
+    const deletedSong = await songToDelete.deleteOne()
+    res.json(deletedSong)
+  } catch (error) {
+    console.log(error)
+    res.status(400).json(error)
+  }
+})
+
+playlistRouter.delete('/deleteall', async (req, res) => {
+  try {
+    const deletedSongs = await Song.deleteMany({})
+    const deletedArtists = await Artist.deleteMany({})
+    const deltedAlbums = await Album.deleteMany({})
+    const response = {
+      'songs deleted': deletedSongs.deletedCount,
+      'artists deleted': deletedArtists.deletedCount,
+      'albums deleted': deltedAlbums.deletedCount,
+    }
+    res.json(response)
+  } catch (error) {
+    connsole.log(error)
     res.status(400).json(error)
   }
 })
