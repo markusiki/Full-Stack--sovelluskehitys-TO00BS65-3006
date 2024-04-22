@@ -2,8 +2,6 @@ const playlistRouter = require('express').Router()
 const Song = require('../models/song')
 const Artist = require('../models/artist')
 const Album = require('../models/album')
-const song = require('../models/song')
-const { c } = require('tar')
 
 playlistRouter.get('/getall', async (req, res) => {
   const playlist = await Song.find({})
@@ -49,8 +47,9 @@ playlistRouter.get('/getbyname/:songName', async (req, res) => {
   try {
     const songName = req.params.songName
     const item = await Song.find({
-      title: { $regex: new RegExp(songName, 'i') },
+      title: songName,
     })
+      .collation({ locale: 'en', strength: 2 })
       .populate({
         path: 'artist',
         transform: (item) => (item == null ? null : item.name),
@@ -75,13 +74,13 @@ playlistRouter.post('/add', async (req, res) => {
 
     const existingArtist = await Artist.findOne({
       name: body.artist,
-    })
+    }).collation({ locale: 'en', strength: 2 })
 
     const getExistingSong = async () => {
       const existingSongs = await existingArtist.populate('songs')
       console.log('existingSongs', existingSongs)
       const existingSong = existingSongs.songs.find(
-        (song) => song.title === body.title.toLowerCase()
+        (song) => song.title.toLowerCase() === body.title.toLowerCase()
       )
 
       return existingSong
@@ -109,7 +108,8 @@ playlistRouter.post('/add', async (req, res) => {
 
     const existingAlbum = await Album.findOne({
       title: body.album,
-    })
+    }).collation({ locale: 'en', strength: 2 })
+
     const getAlbum = () => {
       if (!existingAlbum) {
         console.log('newAlbum Created')
@@ -168,7 +168,7 @@ playlistRouter.put('/update/:id', async (req, res) => {
   const id = req.params.id
   const update = req.body
   try {
-    const songToUpdate = await Song.findById(id).exec()
+    const songToUpdate = await Song.findById(id)
     console.log(songToUpdate)
     if (!songToUpdate) {
       res.status(200).json({ message: 'No item matches the given id' })
@@ -183,24 +183,28 @@ playlistRouter.put('/update/:id', async (req, res) => {
       res.status(200).json({ message: 'Artist missing' })
       return
     }
-    const existingArtist = await Artist.findOne({
-      name: { $regex: new RegExp(update.artist, 'i') },
-    })
-    const existingAlbum = await Album.findOne({
-      title: { $regex: new RegExp(update.album, 'i') },
-    })
 
-    const getArtist = () => {
+    const getArtist = async () => {
+      const existingArtist = await Artist.findOne({
+        name: update.artist,
+      }).collation({ locale: 'en', strength: 2 })
+
       if (!existingArtist) {
         const newArtist = Artist.create({
           name: update.artist,
         })
+        console.log('newArtist Created')
         return newArtist
       }
+      console.log('Existing artist used')
       return existingArtist
     }
 
-    const getAlbum = () => {
+    const getAlbum = async () => {
+      const existingAlbum = await Album.findOne({
+        title: update.album,
+      }).collation({ locale: 'en', strength: 2 })
+
       if (!existingAlbum) {
         console.log('newAlbum Created')
         const newAlbum = Album.create({
@@ -211,13 +215,9 @@ playlistRouter.put('/update/:id', async (req, res) => {
       console.log('Existing album used')
       return existingAlbum
     }
-    const artist = await getArtist()
-    console.log('artist', artist)
-    const album = await getAlbum()
-    console.log('album', album)
 
-    const changeArtist = async () => {
-      if (artist._id.toString() !== songToUpdate.artist._id.toString()) {
+    const changeArtist = async (artist) => {
+      if (artist._id.toString() !== songToUpdate.artist.toString()) {
         // Delete song from old artist's song list
         const artistToDeleteFrom = await Artist.findById(
           songToUpdate.artist._id
@@ -234,12 +234,11 @@ playlistRouter.put('/update/:id', async (req, res) => {
         }
         // Add song to new artist's song list
         artist.songs = artist.songs.concat(songToUpdate._id)
-        await artist.save()
       }
     }
 
-    const changeAlbum = async () => {
-      if (album._id.toString() !== songToUpdate.album._id.toString()) {
+    const changeAlbum = async (album) => {
+      if (album._id.toString() !== songToUpdate.album.toString()) {
         // Delete song from old album's song list
         const albumToDeleteFrom = await Album.findById(songToUpdate.album._id)
         for (const [index, song] of albumToDeleteFrom.songs.entries()) {
@@ -254,31 +253,32 @@ playlistRouter.put('/update/:id', async (req, res) => {
         }
         // Add song to new album's song list
         album.songs = album.songs.concat(songToUpdate._id)
-        await album.save()
       }
+    }
+    if (update.artist && update.album) {
+      const artist = await getArtist()
+      console.log('artist', artist)
+      const album = await getAlbum()
+      await changeArtist(artist)
+      songToUpdate.set('artist', artist._id)
+      album.artist = {
+        _id: artist._id,
+        name: artist.name,
+      }
+      await album.save()
+      await changeAlbum(album)
+      songToUpdate.set('album', album._id)
+      artist.albums = artist.albums.concat({
+        _id: album._id,
+        title: album.title,
+      })
+
+      await artist.save()
+      await album.save()
     }
 
     Object.entries(update).forEach(async ([key, value]) => {
-      if (key === 'artist') {
-        changeArtist()
-        songToUpdate.set(key, artist._id)
-        album.artist = {
-          _id: artist._id,
-          name: artist.name,
-        }
-        await album.save()
-        return
-      }
-      if (key === 'album') {
-        changeAlbum()
-        songToUpdate.set(key, album._id)
-        artist.albums = artist.albums.concat({
-          _id: album._id,
-          title: album.title,
-        })
-
-        await artist.save()
-      } else {
+      if (key !== 'artist' && key !== 'album') {
         console.log(key, value)
         songToUpdate.set(key, value)
       }
