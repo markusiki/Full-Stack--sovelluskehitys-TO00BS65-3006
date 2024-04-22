@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 const songSchema = mongoose.Schema({
   title: {
     type: String,
+    lowercase: true,
     required: true,
   },
   artist: {
@@ -10,7 +11,10 @@ const songSchema = mongoose.Schema({
     ref: 'Artist',
     required: true,
   },
-  genre: String,
+  genre: {
+    type: String,
+    lowercase: true,
+  },
   album: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Album',

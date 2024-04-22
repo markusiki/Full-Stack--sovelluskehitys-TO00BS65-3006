@@ -2,6 +2,8 @@ const playlistRouter = require('express').Router()
 const Song = require('../models/song')
 const Artist = require('../models/artist')
 const Album = require('../models/album')
+const song = require('../models/song')
+const { c } = require('tar')
 
 playlistRouter.get('/getall', async (req, res) => {
   const playlist = await Song.find({})
@@ -71,17 +73,30 @@ playlistRouter.post('/add', async (req, res) => {
   try {
     const body = req.body
 
-    const song = await Song.findOne({
-      title: { $regex: new RegExp(body.title, 'i') },
-    })
     const existingArtist = await Artist.findOne({
-      name: { $regex: new RegExp(body.artist, 'i') },
+      name: body.artist,
     })
-    console.log('song', song)
-    if (song && existingArtist) {
-      res.status(400).json({ message: 'Song already exists' })
-      return
+
+    const getExistingSong = async () => {
+      const existingSongs = await existingArtist.populate('songs')
+      console.log('existingSongs', existingSongs)
+      const existingSong = existingSongs.songs.find(
+        (song) => song.title === body.title.toLowerCase()
+      )
+
+      return existingSong
     }
+
+    console.log('existingArtist', existingArtist)
+    if (existingArtist) {
+      const existingSong = await getExistingSong()
+      console.log('existingSong', existingSong)
+      if (existingSong) {
+        res.status(400).json({ message: 'Song already exists' })
+        return
+      }
+    }
+
     const getArtist = () => {
       if (!existingArtist) {
         const newArtist = Artist.create({ name: body.artist })
@@ -93,7 +108,7 @@ playlistRouter.post('/add', async (req, res) => {
     console.log('artist', artist)
 
     const existingAlbum = await Album.findOne({
-      title: { $regex: new RegExp(body.album, 'i') },
+      title: body.album,
     })
     const getAlbum = () => {
       if (!existingAlbum) {
