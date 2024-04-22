@@ -184,10 +184,10 @@ playlistRouter.put('/update/:id', async (req, res) => {
       return
     }
     const existingArtist = await Artist.findOne({
-      name: { $regex: new RegExp(update.artist, 'i') },
+      name: update.artist,
     })
     const existingAlbum = await Album.findOne({
-      title: { $regex: new RegExp(update.album, 'i') },
+      title: update.album,
     })
 
     const getArtist = () => {
