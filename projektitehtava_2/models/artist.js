@@ -3,7 +3,6 @@ const mongoose = require('mongoose')
 const artistSchema = mongoose.Schema({
   name: {
     type: String,
-    lowercase: true,
     required: true,
   },
   songs: [
