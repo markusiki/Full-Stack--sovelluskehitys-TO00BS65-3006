@@ -1,7 +1,7 @@
 const express = require('express')
 const app = express()
 const mongoose = require('mongoose')
-const logger = require('morgan')
+const morgan = require('morgan')
 const playlistRouter = require('./controllers/playlist')
 const middleware = require('./utils/middleware')
 require('dotenv').config()
@@ -16,7 +16,7 @@ mongoose
   .catch((error) => {
     console.log(`Error connecting to MongoDB: ${error.message}`)
   })
-
+app.use(morgan('combined'))
 app.use(express.json())
 app.use(middleware.songExtractor)
 app.use('/api', playlistRouter)
