@@ -75,10 +75,7 @@ playlistRouter.post('/add', songExtractor, async (req, res) => {
     const body = req.body
 
     const artist = await getArtist(body.artist)
-    console.log('artist', artist)
-
     const album = await getAlbum(body.album)
-    console.log('album', album)
 
     const newSong = new Song({
       title: body.title,
@@ -101,9 +98,7 @@ playlistRouter.post('/add', songExtractor, async (req, res) => {
 
     artist.songs = artist.songs.concat(savedSong._id)
     await artist.save()
-    console.log('JSON.stringify(album.artist)', JSON.stringify(album.artist))
     if (JSON.stringify(album.artist) === '{}') {
-      console.log('no artist')
       album.artist = { _id: artist._id, name: artist.name }
     }
     album.songs = album.songs.concat(savedSong._id)
@@ -120,7 +115,6 @@ playlistRouter.put('/update/:id', songExtractor, async (req, res) => {
   const update = req.body
   try {
     const songToUpdate = await Song.findById(req.params.id)
-    console.log(songToUpdate)
     if (!songToUpdate) {
       res.status(200).json({ message: 'No item matches the given id' })
       return
@@ -176,7 +170,6 @@ playlistRouter.put('/update/:id', songExtractor, async (req, res) => {
     }
     if (update.artist && update.album) {
       const artist = await getArtist(update.artist)
-      console.log('artist', artist)
       const album = await getAlbum(update.album)
       await changeArtist(artist)
       songToUpdate.set('artist', artist._id)
@@ -198,7 +191,6 @@ playlistRouter.put('/update/:id', songExtractor, async (req, res) => {
 
     Object.entries(update).forEach(async ([key, value]) => {
       if (key !== 'artist' && key !== 'album') {
-        console.log(key, value)
         songToUpdate.set(key, value)
       }
     })
