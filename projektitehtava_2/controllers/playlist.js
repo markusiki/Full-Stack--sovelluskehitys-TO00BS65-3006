@@ -51,7 +51,6 @@ playlistRouter.get('/getbyname/:songName', async (req, res) => {
     const item = await Song.find({
       title: { $regex: new RegExp(songName, 'i') },
     })
-      .collation({ locale: 'en', strength: 2 })
       .populate({
         path: 'artist',
         transform: (item) => (item == null ? null : item.name),
