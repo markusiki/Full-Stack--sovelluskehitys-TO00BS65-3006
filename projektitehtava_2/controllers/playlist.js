@@ -49,7 +49,7 @@ playlistRouter.get('/getbyname/:songName', async (req, res) => {
   try {
     const songName = req.params.songName
     const item = await Song.find({
-      title: songName,
+      title: { $regex: new RegExp(songName, 'i') },
     })
       .collation({ locale: 'en', strength: 2 })
       .populate({
