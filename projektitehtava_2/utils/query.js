@@ -10,10 +10,8 @@ const getArtist = async (artist) => {
     const newArtist = Artist.create({
       name: artist,
     })
-    console.log('newArtist Created')
     return newArtist
   }
-  console.log('Existing artist used')
   return existingArtist
 }
 
@@ -23,13 +21,11 @@ const getAlbum = async (album) => {
   }).collation({ locale: 'en', strength: 2 })
 
   if (!existingAlbum) {
-    console.log('newAlbum Created')
     const newAlbum = Album.create({
       title: album,
     })
     return newAlbum
   }
-  console.log('Existing album used')
   return existingAlbum
 }
 
