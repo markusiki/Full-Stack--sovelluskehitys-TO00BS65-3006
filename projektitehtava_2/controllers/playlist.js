@@ -167,6 +167,7 @@ playlistRouter.put('/update/:id', songExtractor, async (req, res) => {
         album.songs = album.songs.concat(songToUpdate._id)
       }
     }
+    // Update artist and album
     if (update.artist && update.album) {
       const artist = await getArtist(update.artist)
       const album = await getAlbum(update.album)
@@ -187,7 +188,7 @@ playlistRouter.put('/update/:id', songExtractor, async (req, res) => {
       await artist.save()
       await album.save()
     }
-
+    //Update all other parameters
     Object.entries(update).forEach(async ([key, value]) => {
       if (key !== 'artist' && key !== 'album') {
         songToUpdate.set(key, value)
