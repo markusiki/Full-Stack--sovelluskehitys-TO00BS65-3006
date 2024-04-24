@@ -221,10 +221,4 @@ playlistRouter.delete('/deleteall', async (req, res) => {
   }
 })
 
-playlistRouter.get('/test', async (req, res) => {
-  const artist = await Artist.findOne({}).populate('songs')
-  const genre = artist.songs[0]
-  res.json(genre)
-})
-
 module.exports = playlistRouter
