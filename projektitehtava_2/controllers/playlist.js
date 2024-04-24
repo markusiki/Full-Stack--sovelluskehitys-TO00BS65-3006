@@ -3,7 +3,12 @@ const Song = require('../models/song')
 const Artist = require('../models/artist')
 const Album = require('../models/album')
 const { songExtractor } = require('../utils/middleware')
-const { getArtist, getAlbum } = require('../utils/query')
+const {
+  getArtist,
+  getAlbum,
+  deleteFromArtist,
+  deleteFromAlbum,
+} = require('../utils/query')
 
 playlistRouter.get('/getall', async (req, res) => {
   const playlist = await Song.find({})
@@ -130,20 +135,7 @@ playlistRouter.put('/update/:id', songExtractor, async (req, res) => {
 
     const changeArtist = async (artist) => {
       if (artist._id.toString() !== songToUpdate.artist.toString()) {
-        // Delete song from old artist's song list
-        const artistToDeleteFrom = await Artist.findById(
-          songToUpdate.artist._id
-        )
-        for (const [index, song] of artistToDeleteFrom.songs.entries()) {
-          if (song._id.toString() === songToUpdate._id.toString()) {
-            artistToDeleteFrom.songs = artistToDeleteFrom.songs.toSpliced(
-              index,
-              1
-            )
-            await artistToDeleteFrom.save()
-            break
-          }
-        }
+        await deleteFromArtist(songToUpdate)
         // Add song to new artist's song list
         artist.songs = artist.songs.concat(songToUpdate._id)
       }
@@ -151,18 +143,7 @@ playlistRouter.put('/update/:id', songExtractor, async (req, res) => {
 
     const changeAlbum = async (album) => {
       if (album._id.toString() !== songToUpdate.album.toString()) {
-        // Delete song from old album's song list
-        const albumToDeleteFrom = await Album.findById(songToUpdate.album._id)
-        for (const [index, song] of albumToDeleteFrom.songs.entries()) {
-          if (song._id.toString() === songToUpdate._id.toString()) {
-            albumToDeleteFrom.songs = albumToDeleteFrom.songs.toSpliced(
-              index,
-              1
-            )
-            await albumToDeleteFrom.save()
-            break
-          }
-        }
+        await deleteFromAlbum(songToUpdate)
         // Add song to new album's song list
         album.songs = album.songs.concat(songToUpdate._id)
       }
@@ -211,33 +192,10 @@ playlistRouter.delete('/delete/:id', async (req, res) => {
       res.status(404).json({ message: 'No item matches the given id' })
       return
     }
-    const deleteFromArtist = async () => {
-      const artistToDeleteFrom = await Artist.findById(songToDelete.artist)
-      for (const [index, song] of artistToDeleteFrom.songs.entries()) {
-        if (song._id.toString() === songToDelete._id.toString()) {
-          artistToDeleteFrom.songs = artistToDeleteFrom.songs.toSpliced(
-            index,
-            1
-          )
-          await artistToDeleteFrom.save()
-          break
-        }
-      }
-    }
 
-    const deleteFromAlbum = async () => {
-      const albumToDeleteFrom = await Album.findById(songToDelete.album)
-      for (const [index, song] of albumToDeleteFrom.songs.entries()) {
-        if (song._id.toString() === songToDelete._id.toString()) {
-          albumToDeleteFrom.songs = albumToDeleteFrom.songs.toSpliced(index, 1)
-          await albumToDeleteFrom.save()
-          break
-        }
-      }
-    }
+    await deleteFromArtist(songToDelete)
+    await deleteFromAlbum(songToDelete)
 
-    deleteFromArtist()
-    deleteFromAlbum()
     const deletedSong = await songToDelete.deleteOne()
     res.json(deletedSong)
   } catch (error) {
@@ -261,6 +219,12 @@ playlistRouter.delete('/deleteall', async (req, res) => {
     connsole.log(error)
     res.status(400).json(error)
   }
+})
+
+playlistRouter.get('/test', async (req, res) => {
+  const artist = await Artist.findOne({}).populate('songs')
+  const genre = artist.songs[0]
+  res.json(genre)
 })
 
 module.exports = playlistRouter

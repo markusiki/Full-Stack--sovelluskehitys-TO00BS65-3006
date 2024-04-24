@@ -29,4 +29,26 @@ const getAlbum = async (album) => {
   return existingAlbum
 }
 
-module.exports = { getArtist, getAlbum }
+const deleteFromArtist = async (songToDelete) => {
+  const artistToDeleteFrom = await Artist.findById(songToDelete.artist)
+  for (const [index, song] of artistToDeleteFrom.songs.entries()) {
+    if (song._id.toString() === songToDelete._id.toString()) {
+      artistToDeleteFrom.songs = artistToDeleteFrom.songs.toSpliced(index, 1)
+      await artistToDeleteFrom.save()
+      break
+    }
+  }
+}
+
+const deleteFromAlbum = async (songToDelete) => {
+  const albumToDeleteFrom = await Album.findById(songToDelete.album)
+  for (const [index, song] of albumToDeleteFrom.songs.entries()) {
+    if (song._id.toString() === songToDelete._id.toString()) {
+      albumToDeleteFrom.songs = albumToDeleteFrom.songs.toSpliced(index, 1)
+      await albumToDeleteFrom.save()
+      break
+    }
+  }
+}
+
+module.exports = { getArtist, getAlbum, deleteFromArtist, deleteFromAlbum }
