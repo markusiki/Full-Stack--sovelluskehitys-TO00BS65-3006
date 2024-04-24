@@ -3,7 +3,6 @@ const app = express()
 const mongoose = require('mongoose')
 const morgan = require('morgan')
 const playlistRouter = require('./controllers/playlist')
-const middleware = require('./utils/middleware')
 require('dotenv').config()
 
 const MONGODB_URI = process.env.MONGODB_URI
@@ -18,7 +17,6 @@ mongoose
   })
 app.use(morgan('combined'))
 app.use(express.json())
-app.use(middleware.songExtractor)
 app.use('/api', playlistRouter)
 
 module.exports = app
