@@ -89,6 +89,8 @@ playlistRouter.post('/add', songExtractor, async (req, res) => {
       year: body.year,
     })
 
+    await newSong.populate('artist album')
+
     const savedSong = await newSong.save()
     const albumIncluded = artist.albums.find(
       (alb) => alb._id.toString() === album._id.toString()
@@ -108,7 +110,16 @@ playlistRouter.post('/add', songExtractor, async (req, res) => {
     album.songs = album.songs.concat(savedSong._id)
     await album.save()
 
-    res.status(200).json(savedSong)
+    const response = {
+      id: savedSong._id,
+      title: savedSong.title,
+      artist: savedSong.artist.name,
+      album: savedSong.album.title,
+      genre: savedSong.genre,
+      year: savedSong.year,
+    }
+
+    res.status(200).json(response)
   } catch (error) {
     console.log(error)
     res.status(400).json()
@@ -175,9 +186,18 @@ playlistRouter.put('/update/:id', songExtractor, async (req, res) => {
         songToUpdate.set(key, value)
       }
     })
-
+    await songToUpdate.populate('artist album')
     const updatedSong = await songToUpdate.save()
-    res.json(updatedSong)
+    const response = {
+      id: updatedSong._id,
+      title: updatedSong.title,
+      artist: updatedSong.artist.name,
+      album: updatedSong.album.title,
+      genre: updatedSong.genre,
+      year: updatedSong.year,
+    }
+
+    res.status(200).json(response)
   } catch (error) {
     console.log(error)
     res.status(400).json(error)

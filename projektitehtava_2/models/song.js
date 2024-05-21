@@ -1,4 +1,6 @@
 const mongoose = require('mongoose')
+const artist = require('./artist')
+const album = require('./album')
 
 const songSchema = mongoose.Schema({
   title: {
@@ -28,6 +30,7 @@ songSchema.set('toJSON', {
     delete returnedObject._id
     delete returnedObject.__v
   },
+  virtuals: true,
 })
 
 module.exports = mongoose.model('Song', songSchema)
