@@ -1,5 +1,5 @@
-import { IPlaylist, IPlaylistProps } from '@/interfaces'
-import { Input, List, theme } from 'antd'
+import { IPlaylistProps } from '@/interfaces'
+import { List, theme } from 'antd'
 
 const Playlist: React.FC<IPlaylistProps> = ({ playlist }) => {
   const {
