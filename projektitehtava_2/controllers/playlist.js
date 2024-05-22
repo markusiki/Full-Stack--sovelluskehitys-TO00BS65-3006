@@ -131,7 +131,7 @@ playlistRouter.put('/update/:id', songExtractor, async (req, res) => {
   try {
     const songToUpdate = await Song.findById(req.params.id)
     if (!songToUpdate) {
-      res.status(200).json({ message: 'No item matches the given id' })
+      res.status(404).json({ message: 'No item matches the given id' })
       return
     }
 
