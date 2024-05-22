@@ -1,19 +1,12 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import {
-  DesktopOutlined,
-  FileOutlined,
-  PieChartOutlined,
-  TeamOutlined,
-  UserOutlined,
-} from '@ant-design/icons'
+import { DesktopOutlined, PieChartOutlined } from '@ant-design/icons'
 import type { MenuProps } from 'antd'
-import { Breadcrumb, Input, Layout, Menu, theme } from 'antd'
+import { Layout, Menu, message, theme } from 'antd'
 import Playlist from '@/pages/playlist'
 import Search from '@/pages/search'
 import AddSong from '@/pages/addSong'
-import getAll from '@/services/playlist'
 import playlistServices from '@/services/playlist'
 import { ISong } from '@/interfaces'
 
@@ -59,6 +52,22 @@ const App: React.FC = () => {
   const [filteredPlaylist, setFilteredPlaylist] = useState<ISong[]>([])
   const [newSong, setNewSong] = useState<ISong>(song)
 
+  const [messageApi, contextHolder] = message.useMessage()
+
+  const success = (message: string) => {
+    messageApi.open({
+      type: 'success',
+      content: message,
+    })
+  }
+
+  const error = (message: string) => {
+    messageApi.open({
+      type: 'error',
+      content: message,
+    })
+  }
+
   useEffect(() => {
     playlistServices.getAll().then((response) => {
       setPlaylist(response)
@@ -79,16 +88,15 @@ const App: React.FC = () => {
     }
   }
 
-  const handleAddSong = (song: ISong) => {
+  const handleAddSong = async (song: ISong) => {
     try {
-      playlistServices.addSong(song).then((response) => {
-        const newSong: ISong = response.data
-        setPlaylist([...playlist, newSong])
-      })
+      const returnedSong = await playlistServices.addSong(song)
+      setPlaylist([...playlist, returnedSong])
+      success(`${returnedSong.title} added to playlist`)
       return true
-    } catch (error) {
-      console.log(error)
-      return { error }
+    } catch (exeption: any) {
+      error(exeption.response.data.message)
+      return false
     }
   }
 
@@ -130,6 +138,7 @@ const App: React.FC = () => {
           Ant Design ©{new Date().getFullYear()} Created by Ant UED
         </Footer>
       </Layout>
+      {contextHolder}
     </Layout>
   )
 }
