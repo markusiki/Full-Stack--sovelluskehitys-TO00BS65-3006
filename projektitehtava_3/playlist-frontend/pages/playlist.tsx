@@ -2,11 +2,12 @@ import { IPlaylistProps } from '@/interfaces'
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons'
 import { List, theme } from 'antd'
 import React from 'react'
+import UpdateSong from './updateSong'
 
 const Playlist: React.FC<IPlaylistProps> = ({
   playlist,
   handleDelete,
-  handleEdit,
+  handleEditClick,
 }) => {
   const {
     token: { colorBgContainer, borderRadiusLG },
@@ -28,7 +29,10 @@ const Playlist: React.FC<IPlaylistProps> = ({
         renderItem={(item) => (
           <List.Item
             actions={[
-              <button key="list-loadmore-edit" onClick={() => handleEdit(item)}>
+              <button
+                key="list-loadmore-edit"
+                onClick={() => handleEditClick(item)}
+              >
                 <EditOutlined />
               </button>,
               <button

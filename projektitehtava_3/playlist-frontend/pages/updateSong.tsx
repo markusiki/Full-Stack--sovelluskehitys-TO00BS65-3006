@@ -1,10 +1,10 @@
 import SongForm from '@/components/songForm'
-import { IAddSongProps } from '@/interfaces'
+import { IAddSongProps, IUpdateSongProps } from '@/interfaces'
 import { Button, Form, Input, InputNumber, theme, Typography } from 'antd'
 
 const { Title } = Typography
 
-const AddSong: React.FC<IAddSongProps> = ({ setNewSong, handleAddSong }) => {
+const UpdateSong: React.FC<IUpdateSongProps> = ({ handleUpdateSong, song }) => {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken()
@@ -17,7 +17,7 @@ const AddSong: React.FC<IAddSongProps> = ({ setNewSong, handleAddSong }) => {
   const [form] = Form.useForm()
 
   const onFinish = async (values: any) => {
-    const succes = await handleAddSong(values)
+    const succes = await handleUpdateSong(song.id, values)
     if (succes) {
       form.resetFields()
     }
@@ -31,10 +31,10 @@ const AddSong: React.FC<IAddSongProps> = ({ setNewSong, handleAddSong }) => {
         borderRadius: borderRadiusLG,
       }}
     >
-      <Title level={2}>Add song to playlist</Title>
-      <SongForm onFinish={onFinish} form={form} />
+      <Title level={2}>Edit song</Title>
+      <SongForm onFinish={onFinish} form={form} song={song} />
     </div>
   )
 }
 
-export default AddSong
+export default UpdateSong

@@ -29,8 +29,8 @@ const deleteAll = async () => {
   return response.data
 }
 
-const update = async (song: ISong) => {
-  const response = await axios.put(`api/update/${song.id}`, {song})
+const update = async (id: string, song: ISong) => {
+  const response = await axios.put(`api/update/${id}`, song)
   return response.data
 }
 

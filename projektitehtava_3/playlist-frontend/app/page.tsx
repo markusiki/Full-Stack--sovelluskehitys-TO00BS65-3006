@@ -9,7 +9,8 @@ import Search from '@/pages/search'
 import AddSong from '@/pages/addSong'
 import playlistServices from '@/services/playlist'
 import { ISong } from '@/interfaces'
-import { AxiosError } from 'axios'
+import axios, { AxiosError } from 'axios'
+import UpdateSong from '@/pages/updateSong'
 
 const { Header, Content, Footer, Sider } = Layout
 
@@ -53,6 +54,7 @@ const App: React.FC = () => {
   const [playlist, setPlaylist] = useState<ISong[]>([song])
   const [filteredPlaylist, setFilteredPlaylist] = useState<ISong[]>([])
   const [newSong, setNewSong] = useState<ISong>(song)
+  const [songToUpdate, setSongToUpdate] = useState<ISong>(song)
 
   const [messageApi, contextHolder] = message.useMessage()
 
@@ -115,7 +117,33 @@ const App: React.FC = () => {
     }
   }
 
-  const handleEdit = async () => {}
+  const handleEditClick = (song: ISong) => {
+    setSongToUpdate(song)
+    setCurrentItem('update')
+  }
+
+  const handleUpdateSong = async (id: string, song: ISong) => {
+    try {
+      console.log('songToUpdate: ', song, id)
+      const returnedSong = await playlistServices.update(id, song)
+      console.log('returnedSOng: ', returnedSong)
+      setPlaylist(
+        playlist.map((songToModify) =>
+          songToModify.id !== returnedSong.id ? songToModify : returnedSong
+        )
+      )
+      toast('Song updated succesfully!', 'success')
+    } catch (error: any) {
+      if (error.response.status === 404) {
+        toast('Song already deleted', 'error')
+      } else {
+        toast(error.response.data.message, 'error')
+      }
+      setPlaylist(
+        playlist.filter((songToRemove) => songToRemove.id !== song.id)
+      )
+    }
+  }
 
   const pageContent = () => {
     if (currentItem === 'playlist') {
@@ -123,7 +151,7 @@ const App: React.FC = () => {
         <Playlist
           playlist={playlist}
           handleDelete={handleDelete}
-          handleEdit={handleEdit}
+          handleEditClick={handleEditClick}
         />
       )
     }
@@ -138,6 +166,11 @@ const App: React.FC = () => {
     }
     if (currentItem === 'add') {
       return <AddSong setNewSong={setNewSong} handleAddSong={handleAddSong} />
+    }
+    if (currentItem === 'update') {
+      return (
+        <UpdateSong song={songToUpdate} handleUpdateSong={handleUpdateSong} />
+      )
     }
   }
 
