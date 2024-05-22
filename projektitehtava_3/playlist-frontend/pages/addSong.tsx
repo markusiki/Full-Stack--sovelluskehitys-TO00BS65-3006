@@ -1,5 +1,7 @@
 import { IAddSongProps } from '@/interfaces'
-import { Button, Form, FormInstance, Input, InputNumber, theme } from 'antd'
+import { Button, Form, Input, InputNumber, theme, Typography } from 'antd'
+
+const { Title } = Typography
 
 const AddSong: React.FC<IAddSongProps> = ({ setNewSong, handleAddSong }) => {
   const {
@@ -26,23 +28,22 @@ const AddSong: React.FC<IAddSongProps> = ({ setNewSong, handleAddSong }) => {
   }
   /* eslint-enable no-template-curly-in-string */
 
-  const onFinish = (values: any) => {
-    console.log(values)
-    const response = handleAddSong(values)
-    console.log(response)
-    if (response) {
+  const onFinish = async (values: any) => {
+    const succes = await handleAddSong(values)
+    if (succes) {
       form.resetFields()
     }
   }
   return (
     <div
       style={{
-        padding: 24,
+        padding: 30,
         minHeight: 360,
         background: colorBgContainer,
         borderRadius: borderRadiusLG,
       }}
     >
+      <Title level={2}>Add song to playlist</Title>
       <Form
         {...layout}
         form={form}
