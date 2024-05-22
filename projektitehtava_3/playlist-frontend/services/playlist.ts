@@ -19,6 +19,21 @@ const addSong = async (song: ISong) => {
   return response.data
 }
 
-const playlistServices = { getAll, getByName, addSong }
+const deleteOne = async (id: string) => {
+  const response = await axios.delete(`/api/delete/${id}`)
+  return response.data
+}
+
+const deleteAll = async () => {
+  const response = await axios.delete('api/deleteall')
+  return response.data
+}
+
+const update = async (song: ISong) => {
+  const response = await axios.put(`api/update/${song.id}`, {song})
+  return response.data
+}
+
+const playlistServices = { getAll, getByName, addSong, deleteOne, deleteAll, update }
 
 export default playlistServices

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { MouseEventHandler, useEffect, useState } from 'react'
 import { DesktopOutlined, PieChartOutlined } from '@ant-design/icons'
 import type { MenuProps } from 'antd'
 import { Layout, Menu, message, theme } from 'antd'
@@ -9,6 +9,7 @@ import Search from '@/pages/search'
 import AddSong from '@/pages/addSong'
 import playlistServices from '@/services/playlist'
 import { ISong } from '@/interfaces'
+import { AxiosError } from 'axios'
 
 const { Header, Content, Footer, Sider } = Layout
 
@@ -40,6 +41,7 @@ const song = {
   genre: '',
   album: '',
   year: NaN,
+  id: '',
 }
 
 const App: React.FC = () => {
@@ -54,16 +56,9 @@ const App: React.FC = () => {
 
   const [messageApi, contextHolder] = message.useMessage()
 
-  const success = (message: string) => {
+  const toast = (message: string, type: 'success' | 'error') => {
     messageApi.open({
-      type: 'success',
-      content: message,
-    })
-  }
-
-  const error = (message: string) => {
-    messageApi.open({
-      type: 'error',
+      type: type,
       content: message,
     })
   }
@@ -92,17 +87,45 @@ const App: React.FC = () => {
     try {
       const returnedSong = await playlistServices.addSong(song)
       setPlaylist([...playlist, returnedSong])
-      success(`${returnedSong.title} added to playlist`)
+      toast(`${returnedSong.title} added to playlist`, 'success')
       return true
-    } catch (exeption: any) {
-      error(exeption.response.data.message)
+    } catch (error: any) {
+      toast(error.response.data.message, 'error')
       return false
     }
   }
 
+  const handleDelete = async (song: ISong) => {
+    console.log(song)
+    try {
+      const response = await playlistServices.deleteOne(song.id)
+      console.log(response)
+      setPlaylist(
+        playlist.filter((songToRemove) => songToRemove.id !== song.id)
+      )
+      toast(`${song.title} deleted succesfully!`, 'success')
+    } catch (error: any) {
+      if (error.response.status === 404) {
+        console.log(error)
+        toast('Song already deleted', 'error')
+        setPlaylist(
+          playlist.filter((songToRemove) => songToRemove.id !== song.id)
+        )
+      }
+    }
+  }
+
+  const handleEdit = async () => {}
+
   const pageContent = () => {
     if (currentItem === 'playlist') {
-      return <Playlist playlist={playlist} />
+      return (
+        <Playlist
+          playlist={playlist}
+          handleDelete={handleDelete}
+          handleEdit={handleEdit}
+        />
+      )
     }
     if (currentItem === 'search') {
       return (

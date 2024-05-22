@@ -1,12 +1,16 @@
 import { IPlaylistProps } from '@/interfaces'
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons'
 import { List, theme } from 'antd'
+import React from 'react'
 
-const Playlist: React.FC<IPlaylistProps> = ({ playlist }) => {
+const Playlist: React.FC<IPlaylistProps> = ({
+  playlist,
+  handleDelete,
+  handleEdit,
+}) => {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken()
-
-  const handleEdit = () => {}
 
   return (
     <div
@@ -24,8 +28,14 @@ const Playlist: React.FC<IPlaylistProps> = ({ playlist }) => {
         renderItem={(item) => (
           <List.Item
             actions={[
-              <button key="list-loadmore-edit" onClick={handleEdit}>
-                edit
+              <button key="list-loadmore-edit" onClick={() => handleEdit(item)}>
+                <EditOutlined />
+              </button>,
+              <button
+                key="list-loadmore-delete"
+                onClick={() => handleDelete(item)}
+              >
+                <DeleteOutlined />
               </button>,
             ]}
           >
