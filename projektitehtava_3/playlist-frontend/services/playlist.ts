@@ -16,7 +16,7 @@ const getByName = async (songName: string) => {
 const addSong = async (song: ISong) => {
   const response = await axios.post('api/add', song)
   console.log(response)
-  return response
+  return response.data
 }
 
 const playlistServices = { getAll, getByName, addSong }

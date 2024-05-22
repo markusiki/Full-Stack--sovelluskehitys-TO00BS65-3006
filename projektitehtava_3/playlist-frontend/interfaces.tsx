@@ -18,5 +18,5 @@ export interface ISearchProps {
 
 export interface IAddSongProps {
   setNewSong: React.Dispatch<React.SetStateAction<ISong>>
-  handleAddSong: (song: ISong) => boolean | {}
+  handleAddSong: (song: ISong) => Promise<any>
 }
