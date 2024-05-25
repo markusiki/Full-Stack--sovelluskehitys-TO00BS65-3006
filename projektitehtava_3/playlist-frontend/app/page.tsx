@@ -4,12 +4,12 @@ import React, { useEffect, useState } from 'react'
 import { DesktopOutlined, PieChartOutlined } from '@ant-design/icons'
 import type { MenuProps } from 'antd'
 import { Button, Layout, Menu, Space, message, notification, theme } from 'antd'
-import Playlist from '@/pages/playlist'
-import Search from '@/pages/search'
-import AddSong from '@/pages/addSong'
+import Playlist from '@/public/playlist'
+import Search from '@/public/search'
+import AddSong from '@/public/addSong'
 import playlistServices from '@/services/playlist'
 import { ISong } from '@/interfaces'
-import UpdateSong from '@/pages/updateSong'
+import UpdateSong from '@/public/updateSong'
 
 const { Content, Sider } = Layout
 

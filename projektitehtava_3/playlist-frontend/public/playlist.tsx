@@ -1,27 +1,20 @@
-import { ISearchProps } from '@/interfaces'
-import { DeleteOutlined, EditOutlined } from '@ant-design/icons'
-import { Input, List, theme } from 'antd'
-import { ChangeEvent } from 'react'
+import { IPlaylistProps } from '@/interfaces'
+import { Button, List, theme } from 'antd'
+import React from 'react'
 import { Typography } from 'antd'
+import { EditOutlined, DeleteOutlined } from '@ant-design/icons'
 
 const { Title } = Typography
 
-const Search: React.FC<ISearchProps> = ({
-  filteredPlaylist,
-
-  getFilteredPlaylist,
-  handleEditClick,
+const Playlist: React.FC<IPlaylistProps> = ({
+  playlist,
   handleDeleteSong,
+  handleEditClick,
+  confirmDeleteAll,
 }) => {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken()
-
-  const handleSearch = (e: ChangeEvent<HTMLInputElement> | undefined) => {
-    e!.preventDefault()
-    getFilteredPlaylist(e!.target.value)
-    return
-  }
 
   return (
     <div
@@ -32,17 +25,25 @@ const Search: React.FC<ISearchProps> = ({
         borderRadius: borderRadiusLG,
       }}
     >
-      <Title>Search song</Title>
-      <Input
-        type="text"
-        name="search"
-        placeholder="Type song name to search"
-        onChange={handleSearch}
-      ></Input>
+      <Title>Playlist</Title>
       <List
         itemLayout="horizontal"
-        header={<b>Song(s)</b>}
-        dataSource={filteredPlaylist}
+        header={
+          <>
+            <b>Playlist</b>
+            <Button
+              style={{
+                float: 'right',
+                background: '#ff4040',
+                color: '#ffffff',
+              }}
+              onClick={confirmDeleteAll}
+            >
+              Delete All
+            </Button>
+          </>
+        }
+        dataSource={playlist}
         renderItem={(item) => (
           <List.Item
             actions={[
@@ -78,4 +79,4 @@ const Search: React.FC<ISearchProps> = ({
   )
 }
 
-export default Search
+export default Playlist
