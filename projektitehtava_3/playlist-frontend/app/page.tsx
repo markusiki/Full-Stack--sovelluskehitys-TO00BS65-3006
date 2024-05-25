@@ -49,7 +49,8 @@ const App: React.FC = () => {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken()
 
-  const [currentItem, setCurrentItem] = useState('playlist')
+  const [pageContent, setPageContent] = useState('playlist')
+  const [previousPage, setPreviousPage] = useState('')
   const [playlist, setPlaylist] = useState<ISong[]>([song])
   const [filteredPlaylist, setFilteredPlaylist] = useState<ISong[]>([])
   const [songToUpdate, setSongToUpdate] = useState<ISong>(song)
@@ -70,7 +71,7 @@ const App: React.FC = () => {
     })
   }, [])
   const handleMenuClick: MenuProps['onClick'] = (e) => {
-    setCurrentItem(e.key)
+    setPageContent(e.key)
     setFilteredPlaylist([])
   }
 
@@ -89,7 +90,7 @@ const App: React.FC = () => {
       const returnedSong = await playlistServices.addSong(song)
       setPlaylist([...playlist, returnedSong])
       toast(`${returnedSong.title} added to playlist`, 'success')
-      setCurrentItem('playlist')
+      setPageContent('playlist')
       return true
     } catch (error: any) {
       toast(error.response.data.message, 'error')
@@ -130,7 +131,8 @@ const App: React.FC = () => {
 
   const handleEditClick = (song: ISong) => {
     setSongToUpdate(song)
-    setCurrentItem('update')
+    setPreviousPage(pageContent)
+    setPageContent('update')
   }
 
   const handleUpdateSong = async (id: string, song: ISong) => {
@@ -146,7 +148,7 @@ const App: React.FC = () => {
           songToModify.id !== returnedSong.id ? songToModify : returnedSong
         )
       )
-      setCurrentItem('search')
+      setPageContent(previousPage)
       toast('Song updated successfully!', 'success')
     } catch (error: any) {
       if (error.response.status === 404) {
@@ -188,8 +190,8 @@ const App: React.FC = () => {
     })
   }
 
-  const pageContent = () => {
-    if (currentItem === 'playlist') {
+  const getPageContent = () => {
+    if (pageContent === 'playlist') {
       return (
         <Playlist
           playlist={playlist}
@@ -199,7 +201,7 @@ const App: React.FC = () => {
         />
       )
     }
-    if (currentItem === 'search') {
+    if (pageContent === 'search') {
       return (
         <Search
           filteredPlaylist={filteredPlaylist}
@@ -209,10 +211,10 @@ const App: React.FC = () => {
         />
       )
     }
-    if (currentItem === 'add') {
+    if (pageContent === 'add') {
       return <AddSong handleAddSong={handleAddSong} />
     }
-    if (currentItem === 'update') {
+    if (pageContent === 'update') {
       return (
         <UpdateSong song={songToUpdate} handleUpdateSong={handleUpdateSong} />
       )
@@ -226,14 +228,14 @@ const App: React.FC = () => {
         <Menu
           theme="dark"
           defaultSelectedKeys={['1']}
-          selectedKeys={[currentItem]}
+          selectedKeys={[pageContent]}
           mode="inline"
           items={items}
           onClick={handleMenuClick}
         />
       </Sider>
       <Layout>
-        <Content>{pageContent()}</Content>
+        <Content>{getPageContent()}</Content>
       </Layout>
       {contextHolder}
       {setNote}
