@@ -1,6 +1,6 @@
 import SongForm from '@/components/songForm'
-import { IAddSongProps, IUpdateSongProps } from '@/interfaces'
-import { Button, Form, Input, InputNumber, theme, Typography } from 'antd'
+import { IUpdateSongProps } from '@/interfaces'
+import { Form, theme, Typography } from 'antd'
 
 const { Title } = Typography
 

@@ -1,18 +1,17 @@
 'use client'
 
-import React, { MouseEventHandler, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { DesktopOutlined, PieChartOutlined } from '@ant-design/icons'
 import type { MenuProps } from 'antd'
-import { Layout, Menu, message, theme } from 'antd'
+import { Button, Layout, Menu, Space, message, notification, theme } from 'antd'
 import Playlist from '@/pages/playlist'
 import Search from '@/pages/search'
 import AddSong from '@/pages/addSong'
 import playlistServices from '@/services/playlist'
 import { ISong } from '@/interfaces'
-import axios, { AxiosError } from 'axios'
 import UpdateSong from '@/pages/updateSong'
 
-const { Header, Content, Footer, Sider } = Layout
+const { Content, Sider } = Layout
 
 type MenuItem = Required<MenuProps>['items'][number]
 
@@ -53,10 +52,10 @@ const App: React.FC = () => {
   const [currentItem, setCurrentItem] = useState('playlist')
   const [playlist, setPlaylist] = useState<ISong[]>([song])
   const [filteredPlaylist, setFilteredPlaylist] = useState<ISong[]>([])
-  const [newSong, setNewSong] = useState<ISong>(song)
   const [songToUpdate, setSongToUpdate] = useState<ISong>(song)
 
   const [messageApi, contextHolder] = message.useMessage()
+  const [note, setNote] = notification.useNotification()
 
   const toast = (message: string, type: 'success' | 'error') => {
     messageApi.open({
@@ -71,8 +70,8 @@ const App: React.FC = () => {
     })
   }, [])
   const handleMenuClick: MenuProps['onClick'] = (e) => {
-    console.log('click', e)
     setCurrentItem(e.key)
+    setFilteredPlaylist([])
   }
 
   const getFilteredPlaylist = (songName: string) => {
@@ -90,6 +89,7 @@ const App: React.FC = () => {
       const returnedSong = await playlistServices.addSong(song)
       setPlaylist([...playlist, returnedSong])
       toast(`${returnedSong.title} added to playlist`, 'success')
+      setCurrentItem('playlist')
       return true
     } catch (error: any) {
       toast(error.response.data.message, 'error')
@@ -97,23 +97,34 @@ const App: React.FC = () => {
     }
   }
 
-  const handleDelete = async (song: ISong) => {
-    console.log(song)
+  const handleDeleteSong = async (song: ISong) => {
     try {
       const response = await playlistServices.deleteOne(song.id)
-      console.log(response)
       setPlaylist(
         playlist.filter((songToRemove) => songToRemove.id !== song.id)
       )
-      toast(`${song.title} deleted succesfully!`, 'success')
+      setFilteredPlaylist(
+        filteredPlaylist.filter((songToRemove) => songToRemove.id !== song.id)
+      )
+      toast(`${song.title} deleted successfully!`, 'success')
     } catch (error: any) {
       if (error.response.status === 404) {
-        console.log(error)
         toast('Song already deleted', 'error')
         setPlaylist(
           playlist.filter((songToRemove) => songToRemove.id !== song.id)
         )
       }
+    }
+  }
+
+  const handleDeleteAll = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    try {
+      await playlistServices.deleteAll()
+      setPlaylist([])
+      setFilteredPlaylist([])
+    } catch (error) {
+      toast('Server side error', 'error')
     }
   }
 
@@ -124,15 +135,19 @@ const App: React.FC = () => {
 
   const handleUpdateSong = async (id: string, song: ISong) => {
     try {
-      console.log('songToUpdate: ', song, id)
       const returnedSong = await playlistServices.update(id, song)
-      console.log('returnedSOng: ', returnedSong)
       setPlaylist(
         playlist.map((songToModify) =>
           songToModify.id !== returnedSong.id ? songToModify : returnedSong
         )
       )
-      toast('Song updated succesfully!', 'success')
+      setFilteredPlaylist(
+        filteredPlaylist.map((songToModify) =>
+          songToModify.id !== returnedSong.id ? songToModify : returnedSong
+        )
+      )
+      setCurrentItem('search')
+      toast('Song updated successfully!', 'success')
     } catch (error: any) {
       if (error.response.status === 404) {
         toast('Song already deleted', 'error')
@@ -145,13 +160,42 @@ const App: React.FC = () => {
     }
   }
 
+  const confirmDeleteAll = () => {
+    const key = `open${Date.now()}`
+    const btn = (
+      <Space>
+        <Button
+          type="link"
+          size="small"
+          onClick={(e) => {
+            note.destroy()
+            handleDeleteAll(e)
+          }}
+        >
+          Confirm
+        </Button>
+        <Button type="primary" size="small" onClick={() => note.destroy()}>
+          Cancel
+        </Button>
+      </Space>
+    )
+    note.open({
+      message: 'Confirm action',
+      description: 'Are you sure you want to delete all songs from playlist?',
+      btn,
+      key,
+      onClose: close,
+    })
+  }
+
   const pageContent = () => {
     if (currentItem === 'playlist') {
       return (
         <Playlist
           playlist={playlist}
-          handleDelete={handleDelete}
+          handleDeleteSong={handleDeleteSong}
           handleEditClick={handleEditClick}
+          confirmDeleteAll={confirmDeleteAll}
         />
       )
     }
@@ -159,13 +203,14 @@ const App: React.FC = () => {
       return (
         <Search
           filteredPlaylist={filteredPlaylist}
-          setFilteredPlaylist={setFilteredPlaylist}
           getFilteredPlaylist={getFilteredPlaylist}
+          handleEditClick={handleEditClick}
+          handleDeleteSong={handleDeleteSong}
         />
       )
     }
     if (currentItem === 'add') {
-      return <AddSong setNewSong={setNewSong} handleAddSong={handleAddSong} />
+      return <AddSong handleAddSong={handleAddSong} />
     }
     if (currentItem === 'update') {
       return (
@@ -188,13 +233,10 @@ const App: React.FC = () => {
         />
       </Sider>
       <Layout>
-        <Header style={{ padding: 0, background: colorBgContainer }} />
-        <Content style={{ margin: '0 16px' }}>{pageContent()}</Content>
-        <Footer style={{ textAlign: 'center' }}>
-          Ant Design ©{new Date().getFullYear()} Created by Ant UED
-        </Footer>
+        <Content>{pageContent()}</Content>
       </Layout>
       {contextHolder}
+      {setNote}
     </Layout>
   )
 }

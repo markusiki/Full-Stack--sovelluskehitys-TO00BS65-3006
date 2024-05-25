@@ -1,13 +1,16 @@
 import { IPlaylistProps } from '@/interfaces'
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons'
-import { List, theme } from 'antd'
+import { Button, List, theme } from 'antd'
 import React from 'react'
-import UpdateSong from './updateSong'
+import { Typography } from 'antd'
+
+const { Title } = Typography
 
 const Playlist: React.FC<IPlaylistProps> = ({
   playlist,
-  handleDelete,
+  handleDeleteSong,
   handleEditClick,
+  confirmDeleteAll,
 }) => {
   const {
     token: { colorBgContainer, borderRadiusLG },
@@ -22,9 +25,20 @@ const Playlist: React.FC<IPlaylistProps> = ({
         borderRadius: borderRadiusLG,
       }}
     >
+      <Title>Playlist</Title>
       <List
         itemLayout="horizontal"
-        header={<b>Playlist</b>}
+        header={
+          <>
+            <b>Playlist</b>
+            <Button
+              className="float-right bg-red-500 text-white"
+              onClick={confirmDeleteAll}
+            >
+              Delete All
+            </Button>
+          </>
+        }
         dataSource={playlist}
         renderItem={(item) => (
           <List.Item
@@ -37,7 +51,7 @@ const Playlist: React.FC<IPlaylistProps> = ({
               </button>,
               <button
                 key="list-loadmore-delete"
-                onClick={() => handleDelete(item)}
+                onClick={() => handleDeleteSong(item)}
               >
                 <DeleteOutlined />
               </button>,

@@ -12,18 +12,19 @@ export interface ISong {
 
 export interface IPlaylistProps {
   playlist: ISong[]
-  handleDelete: (item: ISong) => Promise<any>
+  handleDeleteSong: (item: ISong) => Promise<any>
   handleEditClick: (song: ISong) => void
+  confirmDeleteAll: () => void
 }
 
 export interface ISearchProps {
   filteredPlaylist: ISong[]
-  setFilteredPlaylist: React.Dispatch<React.SetStateAction<ISong[]>>
   getFilteredPlaylist: (songName: string) => void
+  handleDeleteSong: (item: ISong) => Promise<any>
+  handleEditClick: (song: ISong) => void
 }
 
 export interface IAddSongProps {
-  setNewSong: React.Dispatch<React.SetStateAction<ISong>>
   handleAddSong: (song: ISong) => Promise<any>
 }
 

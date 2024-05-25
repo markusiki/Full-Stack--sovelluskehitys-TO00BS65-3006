@@ -1,10 +1,10 @@
 import SongForm from '@/components/songForm'
 import { IAddSongProps } from '@/interfaces'
-import { Button, Form, Input, InputNumber, theme, Typography } from 'antd'
+import { Form, theme, Typography } from 'antd'
 
 const { Title } = Typography
 
-const AddSong: React.FC<IAddSongProps> = ({ setNewSong, handleAddSong }) => {
+const AddSong: React.FC<IAddSongProps> = ({ handleAddSong }) => {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken()
@@ -31,7 +31,7 @@ const AddSong: React.FC<IAddSongProps> = ({ setNewSong, handleAddSong }) => {
         borderRadius: borderRadiusLG,
       }}
     >
-      <Title level={2}>Add song to playlist</Title>
+      <Title>Add song to playlist</Title>
       <SongForm onFinish={onFinish} form={form} />
     </div>
   )
