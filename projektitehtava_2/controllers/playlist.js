@@ -128,13 +128,8 @@ playlistRouter.post('/add', songExtractor, async (req, res) => {
 
 playlistRouter.put('/update/:id', songExtractor, async (req, res) => {
   const update = req.body
+  const songToUpdate = req.songToUpdate
   try {
-    const songToUpdate = await Song.findById(req.params.id)
-    if (!songToUpdate) {
-      res.status(404).json({ message: 'No item matches the given id' })
-      return
-    }
-
     if (update.artist && !update.album) {
       res.status(200).json({ message: 'Album missing' })
       return
